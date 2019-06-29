@@ -148,3 +148,45 @@ func TestGenerateGoTypes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, buf.String())
 }
+
+func TestGenerateGraphQL(t *testing.T) {
+	buf := &bytes.Buffer{}
+	err := GenerateGraphQL(&Options{
+		Version: 1,
+		Models: map[string]Model{
+			"Book": Model{
+				"authors": "[String!]!",
+				"chapter": "Float",
+				"series":  "String",
+				"title":   "String",
+				"volume":  "Int",
+			},
+			"User": Model{
+				"name":     "String",
+				"password": "String",
+			},
+			"UserBook": Model{
+				"current_page": "Int",
+				"rating":       "Float",
+			},
+		},
+		Relationships: []Relationship{
+			Relationship{
+				FromType:  "User",
+				FromCount: "one",
+				ToType:    "UserBook",
+				ToCount:   "many",
+			},
+			Relationship{
+				FromType:  "UserBook",
+				FromCount: "one",
+				ToType:    "Book",
+				ToCount:   "one",
+			},
+		},
+	}, buf)
+
+	expected := ""
+	assert.NoError(t, err)
+	assert.Equal(t, expected, buf.String())
+}
