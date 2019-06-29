@@ -1,7 +1,7 @@
 package potofgreed
 
 import (
-	"os"
+	"bytes"
 	"strings"
 
 	"github.com/stretchr/testify/assert"
@@ -108,7 +108,8 @@ relationships:
 }
 
 func TestGenerate(t *testing.T) {
-	Generate(&Options{
+	buf := &bytes.Buffer{}
+	err := GenerateGoTypes(&Options{
 		Version: 1,
 		Models: map[string]Model{
 			"Book": Model{
@@ -141,6 +142,9 @@ func TestGenerate(t *testing.T) {
 				ToCount:   "one",
 			},
 		},
-	}, os.Stderr)
-	os.Exit(1)
+	}, buf)
+
+	expected := "type package \n\ntype UserBook struct {\n\tRating *float32 `json:\"rating\"`\n\tCurrentPage *int32 `json:\"current_page\"`\n}\ntype User struct {\n\tPassword *string `json:\"password\"`\n\tName *string `json:\"name\"`\n}\ntype Book struct {\n\tVolume *int32 `json:\"volume\"`\n\tTitle *string `json:\"title\"`\n\tSeries *string `json:\"series\"`\n\tChapter *float32 `json:\"chapter\"`\n\tAuthors []string `json:\"authors\"`\n}\n"
+	assert.NoError(t, err)
+	assert.Equal(t, expected, buf.String())
 }
