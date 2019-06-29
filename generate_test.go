@@ -20,6 +20,7 @@ func TestLoad(t *testing.T) {
 			name: "basic",
 			input: `
 version: 1
+package: models
 models:
   User:
     name: String
@@ -45,6 +46,7 @@ relationships:
 `,
 			expected: &Options{
 				Version: 1,
+				Package: "models",
 				Models: map[string]Model{
 					"Book": Model{
 						"authors": "[String!]!",
