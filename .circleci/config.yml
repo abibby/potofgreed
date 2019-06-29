@@ -27,18 +27,12 @@ jobs:
             - v1-pkg-cache
 
       # specify any bash command here prefixed with `run: `
+      - run: go get github.com/mattn/goveralls
       - run: go get -v -t -d ./...
-      - run: go test -v ./...
-
+      - run: go test -v -cover -race -coverprofile=./coverage.out ./...
+      - run: /go/bin/goveralls -coverprofile=./coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
 
       - save_cache: # Store cache in the /go/pkg directory
           key: v1-pkg-cache
           paths:
             - "/go/pkg"
-  test:
-    pre:
-      - go get github.com/mattn/goveralls
-    override:
-      - go test -v -cover -race -coverprofile=/home/ubuntu/coverage.out
-    post:
-      - /home/ubuntu/.go_workspace/bin/goveralls -coverprofile=/home/ubuntu/coverage.out -service=circle-ci -repotoken=$COVERALLS_TOKEN
