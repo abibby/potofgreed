@@ -1,9 +1,19 @@
 package potofgreed
 
 import (
+	"regexp"
 	"strings"
 
 	"golang.org/x/xerrors"
+)
+
+const (
+	// ErrMalformedType is returned when the entered type is not of a valid type
+	ErrMalformedType = SentinelError("types must be alphanumeric and start with a letter")
+
+	// ErrMismatchedBrackets is returned when there are extra square brackets in
+	// a type
+	ErrMismatchedBrackets = SentinelError("array brackets must be matched")
 )
 
 // Type is the type of a column, it uses GraphQL syntax. e.g. String, Int!,
@@ -61,9 +71,9 @@ func (t *Type) Golang() (string, error) {
 	return goSrc, nil
 }
 
-func (t *Type) internalType() (*internalType, error) {
+func (t Type) internalType() (*internalType, error) {
 	iType := &internalType{
-		BaseType: *t,
+		BaseType: t,
 		Nullable: true,
 		Array:    false,
 	}
@@ -75,5 +85,14 @@ func (t *Type) internalType() (*internalType, error) {
 		iType.BaseType = iType.BaseType[1 : len(iType.BaseType)-1]
 		iType.Array = true
 	}
+
+	if strings.HasPrefix(string(iType.BaseType), "[") != (strings.HasSuffix(string(iType.BaseType), "]") || strings.HasSuffix(string(iType.BaseType), "]!")) {
+		return nil, ErrMismatchedBrackets
+	}
+
+	if !regexp.MustCompile(`^(\[)*[a-zA-Z][a-zA-Z0-9]*!?(\]!?)*$`).Match([]byte(iType.BaseType)) {
+		return nil, ErrMalformedType
+	}
+
 	return iType, nil
 }

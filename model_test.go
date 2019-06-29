@@ -26,7 +26,14 @@ func TestModel_Golang(t *testing.T) {
 				"test":         "String!",
 				"struct_field": "Book",
 			},
-			expected: "struct {\n\tTest string `json:\"test\"`\n\tStructField *Book `json:\"struct_field\"`\n}",
+			expected: "struct {\n\tStructField *Book `json:\"struct_field\"`\n\tTest string `json:\"test\"`\n}",
+		},
+		{
+			name: "invalid_type",
+			input: Model{
+				"test": "1",
+			},
+			err: true,
 		},
 	}
 
@@ -39,6 +46,7 @@ func TestModel_Golang(t *testing.T) {
 				return
 			}
 
+			assert.NoError(t, err)
 			assert.Equal(t, test.expected, iType)
 		})
 	}
@@ -64,7 +72,14 @@ func TestModel_GraphQL(t *testing.T) {
 				"test":         "String!",
 				"struct_field": "Book",
 			},
-			expected: "{\n\ttest: String!\n\tstruct_field: Book\n}",
+			expected: "{\n\tstruct_field: Book\n\ttest: String!\n}",
+		},
+		{
+			name: "invalid_type",
+			input: Model{
+				"test": "1",
+			},
+			err: true,
 		},
 	}
 
@@ -77,6 +92,7 @@ func TestModel_GraphQL(t *testing.T) {
 				return
 			}
 
+			assert.NoError(t, err)
 			assert.Equal(t, test.expected, iType)
 		})
 	}

@@ -51,7 +51,7 @@ func GenerateGoTypes(options *Options, out io.Writer) error {
 	}
 
 	sort.Slice(models, func(i, j int) bool {
-		return models[i].Name > models[j].Name
+		return models[i].Name < models[j].Name
 	})
 
 	for _, model := range models {

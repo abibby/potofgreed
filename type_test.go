@@ -60,6 +60,7 @@ func TestType_internalType(t *testing.T) {
 				return
 			}
 
+			assert.NoError(t, err)
 			assert.Equal(t, test.expected, iType)
 		})
 	}
@@ -98,9 +99,24 @@ func TestType_Golang(t *testing.T) {
 			expected: "[]int32",
 		},
 		{
+			name:     "nested_array",
+			input:    Type("[[Int!]!]!"),
+			expected: "[][]int32",
+		},
+		{
 			name:     "non_basic_type",
 			input:    Type("StructType!"),
 			expected: "StructType",
+		},
+		{
+			name:  "invalid_type",
+			input: Type("1StructType"),
+			err:   true,
+		},
+		{
+			name:  "invalid_nested_type",
+			input: Type("[[[StructType]]"),
+			err:   true,
 		},
 	}
 
@@ -112,11 +128,12 @@ func TestType_Golang(t *testing.T) {
 				assert.Error(t, err)
 				return
 			}
-
+			assert.NoError(t, err)
 			assert.Equal(t, test.expected, goSrc)
 		})
 	}
 }
+
 func TestType_GraphQL(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -154,6 +171,11 @@ func TestType_GraphQL(t *testing.T) {
 			input:    Type("StructType!"),
 			expected: "StructType!",
 		},
+		{
+			name:  "invalid",
+			input: Type("1"),
+			err:   true,
+		},
 	}
 
 	for _, test := range tests {
@@ -165,6 +187,7 @@ func TestType_GraphQL(t *testing.T) {
 				return
 			}
 
+			assert.NoError(t, err)
 			assert.Equal(t, test.expected, goSrc)
 		})
 	}

@@ -144,7 +144,7 @@ func TestGenerate(t *testing.T) {
 		},
 	}, buf)
 
-	expected := "type package \n\ntype UserBook struct {\n\tRating *float32 `json:\"rating\"`\n\tCurrentPage *int32 `json:\"current_page\"`\n}\ntype User struct {\n\tPassword *string `json:\"password\"`\n\tName *string `json:\"name\"`\n}\ntype Book struct {\n\tVolume *int32 `json:\"volume\"`\n\tTitle *string `json:\"title\"`\n\tSeries *string `json:\"series\"`\n\tChapter *float32 `json:\"chapter\"`\n\tAuthors []string `json:\"authors\"`\n}\n"
+	expected := "type package \n\ntype Book struct {\n\tAuthors []string `json:\"authors\"`\n\tChapter *float32 `json:\"chapter\"`\n\tSeries *string `json:\"series\"`\n\tTitle *string `json:\"title\"`\n\tVolume *int32 `json:\"volume\"`\n}\ntype User struct {\n\tName *string `json:\"name\"`\n\tPassword *string `json:\"password\"`\n}\ntype UserBook struct {\n\tCurrentPage *int32 `json:\"current_page\"`\n\tRating *float32 `json:\"rating\"`\n}\n"
 	assert.NoError(t, err)
 	assert.Equal(t, expected, buf.String())
 }
