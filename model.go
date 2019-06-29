@@ -63,8 +63,20 @@ func (m Model) Golang() (string, error) {
 		if err != nil {
 			return "", xerrors.Errorf("failed to generate type for %s, :w", typ.Field, err)
 		}
-		goSrc += fmt.Sprintf("\t%s %s `json:\"%s\"`\n", strcase.ToCamel(typ.Field), typeSrc, typ.Field)
+		goSrc += fmt.Sprintf("\t%s %s", strcase.ToCamel(typ.Field), typeSrc)
+		if typ.Field != "" {
+			goSrc += fmt.Sprintf(" `json:\"%s\"`", typ.Field)
+		}
+		goSrc += "\n"
 	}
 	goSrc += "}"
 	return goSrc, nil
+}
+
+func (m Model) Clone() Model {
+	newModel := Model{}
+	for field, typ := range m {
+		newModel[field] = typ
+	}
+	return newModel
 }

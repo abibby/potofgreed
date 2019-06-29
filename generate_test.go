@@ -107,7 +107,7 @@ relationships:
 	}
 }
 
-func TestGenerate(t *testing.T) {
+func TestGenerateGoTypes(t *testing.T) {
 	buf := &bytes.Buffer{}
 	err := GenerateGoTypes(&Options{
 		Version: 1,
@@ -144,7 +144,7 @@ func TestGenerate(t *testing.T) {
 		},
 	}, buf)
 
-	expected := "type package \n\ntype Book struct {\n\tAuthors []string `json:\"authors\"`\n\tChapter *float32 `json:\"chapter\"`\n\tSeries *string `json:\"series\"`\n\tTitle *string `json:\"title\"`\n\tVolume *int32 `json:\"volume\"`\n}\ntype User struct {\n\tName *string `json:\"name\"`\n\tPassword *string `json:\"password\"`\n}\ntype UserBook struct {\n\tCurrentPage *int32 `json:\"current_page\"`\n\tRating *float32 `json:\"rating\"`\n}\n"
+	expected := "type package \n\ntype RawBook struct {\n\tAuthors []string `json:\"authors\"`\n\tChapter *float32 `json:\"chapter\"`\n\tSeries *string `json:\"series\"`\n\tTitle *string `json:\"title\"`\n\tVolume *int32 `json:\"volume\"`\n}\ntype Book struct {\n\t RawBook\n\tUserBook *UserBook `json:\"UserBook\"`\n}\ntype RawUser struct {\n\tName *string `json:\"name\"`\n\tPassword *string `json:\"password\"`\n}\ntype User struct {\n\t RawUser\n\tUserBook *UserBook `json:\"UserBook\"`\n}\ntype RawUserBook struct {\n\tCurrentPage *int32 `json:\"current_page\"`\n\tRating *float32 `json:\"rating\"`\n}\ntype UserBook struct {\n\t RawUserBook\n\tBook *Book `json:\"Book\"`\n\tUser *User `json:\"User\"`\n}\n"
 	assert.NoError(t, err)
 	assert.Equal(t, expected, buf.String())
 }

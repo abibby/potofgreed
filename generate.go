@@ -54,15 +54,38 @@ func GenerateGoTypes(options *Options, out io.Writer) error {
 		return models[i].Name < models[j].Name
 	})
 
-	for _, model := range models {
-		goSrc, err := model.Model.Golang()
+	for _, rawModel := range models {
+		goSrc, err := rawModel.Model.Golang()
 		if err != nil {
-			return xerrors.Errorf("failed to generate go definition for %s: %w", model.Name, err)
+			return xerrors.Errorf("failed to generate go definition for Raw%s: %w", rawModel.Name, err)
 		}
 
-		_, err = fmt.Fprintf(out, "type %s %s\n", model.Name, goSrc)
+		_, err = fmt.Fprintf(out, "type Raw%s %s\n", rawModel.Name, goSrc)
 		if err != nil {
-			return xerrors.Errorf("failed to write go source %s: %w", model.Name, err)
+			return xerrors.Errorf("failed to write go source %s: %w", rawModel.Name, err)
+		}
+
+		model := Model{
+			"": Type("Raw" + rawModel.Name + "!"),
+		}
+
+		for _, relation := range options.Relationships {
+			if relation.FromType == rawModel.Name {
+				model[relation.ToType] = Type(relation.ToType)
+			}
+			if relation.ToType == rawModel.Name {
+				model[relation.FromType] = Type(relation.FromType)
+			}
+		}
+
+		goSrc, err = model.Golang()
+		if err != nil {
+			return xerrors.Errorf("failed to generate go definition for %s: %w", rawModel.Name, err)
+		}
+
+		_, err = fmt.Fprintf(out, "type %s %s\n", rawModel.Name, goSrc)
+		if err != nil {
+			return xerrors.Errorf("failed to write go source %s: %w", rawModel.Name, err)
 		}
 	}
 	return nil

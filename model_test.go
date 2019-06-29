@@ -97,3 +97,15 @@ func TestModel_GraphQL(t *testing.T) {
 		})
 	}
 }
+
+func TestModel_Clone(t *testing.T) {
+	input := Model{
+		"key": "value",
+	}
+
+	clone := input.Clone()
+
+	assert.Equal(t, input, clone)
+	clone["bar"] = "foo"
+	assert.NotEqual(t, input, clone)
+}
