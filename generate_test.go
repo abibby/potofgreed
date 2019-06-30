@@ -1,7 +1,6 @@
 package potofgreed
 
 import (
-	"bytes"
 	"strings"
 
 	"github.com/stretchr/testify/assert"
@@ -108,8 +107,7 @@ relationships:
 }
 
 func TestGenerateGoTypes(t *testing.T) {
-	buf := &bytes.Buffer{}
-	err := GenerateGoTypes(&Options{
+	src, err := GenerateGoTypes(&Options{
 		Version: 1,
 		Models: map[string]Model{
 			"Book": Model{
@@ -142,16 +140,15 @@ func TestGenerateGoTypes(t *testing.T) {
 				ToCount:   "one",
 			},
 		},
-	}, buf)
+	})
 
-	expected := "type package \n\ntype RawBook struct {\n\tAuthors []string `json:\"authors\"`\n\tChapter *float32 `json:\"chapter\"`\n\tSeries *string `json:\"series\"`\n\tTitle *string `json:\"title\"`\n\tVolume *int32 `json:\"volume\"`\n}\ntype Book struct {\n\t RawBook\n\tUserBook *UserBook `json:\"user_book\"`\n}\ntype RawUser struct {\n\tName *string `json:\"name\"`\n\tPassword *string `json:\"password\"`\n}\ntype User struct {\n\t RawUser\n\tUserBook *UserBook `json:\"user_book\"`\n}\ntype RawUserBook struct {\n\tCurrentPage *int32 `json:\"current_page\"`\n\tRating *float32 `json:\"rating\"`\n}\ntype UserBook struct {\n\t RawUserBook\n\tBook *Book `json:\"book\"`\n\tUser *User `json:\"user\"`\n}\n"
+	expected := "package \n\ntype RawBook struct {\n\tAuthors []string `json:\"authors\"`\n\tChapter *float32 `json:\"chapter\"`\n\tSeries *string `json:\"series\"`\n\tTitle *string `json:\"title\"`\n\tVolume *int32 `json:\"volume\"`\n}\ntype Book struct {\n\t RawBook\n\tUserBook *UserBook `json:\"user_book\"`\n}\ntype RawUser struct {\n\tName *string `json:\"name\"`\n\tPassword *string `json:\"password\"`\n}\ntype User struct {\n\t RawUser\n\tUserBook *UserBook `json:\"user_book\"`\n}\ntype RawUserBook struct {\n\tCurrentPage *int32 `json:\"current_page\"`\n\tRating *float32 `json:\"rating\"`\n}\ntype UserBook struct {\n\t RawUserBook\n\tBook *Book `json:\"book\"`\n\tUser *User `json:\"user\"`\n}\n"
 	assert.NoError(t, err)
-	assert.Equal(t, expected, buf.String())
+	assert.Equal(t, expected, src)
 }
 
 func TestGenerateGraphQL(t *testing.T) {
-	buf := &bytes.Buffer{}
-	err := GenerateGraphQL(&Options{
+	src, err := GenerateGraphQL(&Options{
 		Version: 1,
 		Models: map[string]Model{
 			"Book": Model{
@@ -184,9 +181,9 @@ func TestGenerateGraphQL(t *testing.T) {
 				ToCount:   "one",
 			},
 		},
-	}, buf)
+	})
 
 	expected := "\nschema {\n\tquery: RootQuery\n\tmutation: RootMutation\n}\ntype RootQuery {\n\tbook(id: ID!): Book\n\tbook_query(filter: BookFilter limit: Int! skip: Int): Book\n\tuser(id: ID!): User\n\tuser_query(filter: UserFilter limit: Int! skip: Int): User\n\tuser_book(id: ID!): UserBook\n\tuser_book_query(filter: UserBookFilter limit: Int! skip: Int): UserBook\n}\ntype RootMuttation {\n\tnew_book(data: BookInput!): Book\n\tupdate_book(id: ID! data: BookInput!): Book\n\tdelete_book(id: ID!): Book\n\tnew_user(data: UserInput!): User\n\tupdate_user(id: ID! data: UserInput!): User\n\tdelete_user(id: ID!): User\n\tnew_user_book(data: UserBookInput!): UserBook\n\tupdate_user_book(id: ID! data: UserBookInput!): UserBook\n\tdelete_user_book(id: ID!): UserBook\n}\ninput BookInput {\n\tauthors: [String!]\n\tchapter: Float\n\tseries: String\n\ttitle: String\n\tvolume: Int\n}\ntype Book {\n\tauthors: [String!]!\n\tchapter: Float\n\tseries: String!\n\ttitle: String!\n\tuser_book: UserBook\n\tvolume: Int\n}\ninput UserInput {\n\tname: String\n\tpassword: String\n}\ntype User {\n\tname: String!\n\tpassword: String!\n\tuser_book: UserBook\n}\ninput UserBookInput {\n\tcurrent_page: Int\n\trating: Float\n}\ntype UserBook {\n\tbook: Book\n\tcurrent_page: Int\n\trating: Float\n\tuser: User\n}\n"
 	assert.NoError(t, err)
-	assert.Equal(t, expected, buf.String())
+	assert.Equal(t, expected, src)
 }

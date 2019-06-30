@@ -1,0 +1,24 @@
+version: 1
+package: models
+models:
+  User:
+    name: String
+    password: String
+  Book:
+    title: String!
+    series: String!
+    authors: "[String!]!"
+    chapter: Float
+    volume: Int
+  UserBook:
+    current_page: Int
+    rating: Float
+relationships:
+  - from_type: User
+    from_count: one
+    to_type: UserBook
+    to_count: many
+  - from_type: UserBook
+    from_count: one
+    to_type: Book
+    to_count: one

@@ -10,6 +10,14 @@ import (
 
 type Model map[string]Type
 
+func (m Model) Nullable() Model {
+	clone := m.Clone()
+	for field, typ := range clone {
+		clone[field] = typ.Nullable()
+	}
+	return clone
+}
+
 // GraphQL returns a representration of the model in GraphQL syntax
 func (m Model) GraphQL() (string, error) {
 

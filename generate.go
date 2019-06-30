@@ -36,12 +36,9 @@ func Load(options io.Reader) (*Options, error) {
 	return o, nil
 }
 
-func GenerateGoTypes(options *Options, out io.Writer) error {
+func GenerateGoTypes(options *Options) (string, error) {
 
-	_, err := fmt.Fprintf(out, "type package %s\n\n", options.Package)
-	if err != nil {
-		return xerrors.Errorf("failed to write go package: %w", err)
-	}
+	src := fmt.Sprintf("package %s\n\n", options.Package)
 	type namedModel struct {
 		Name  string
 		Model Model
@@ -58,13 +55,10 @@ func GenerateGoTypes(options *Options, out io.Writer) error {
 	for _, rawModel := range models {
 		goSrc, err := rawModel.Model.Golang()
 		if err != nil {
-			return xerrors.Errorf("failed to generate go definition for Raw%s: %w", rawModel.Name, err)
+			return "", xerrors.Errorf("failed to generate go definition for Raw%s: %w", rawModel.Name, err)
 		}
 
-		_, err = fmt.Fprintf(out, "type Raw%s %s\n", rawModel.Name, goSrc)
-		if err != nil {
-			return xerrors.Errorf("failed to write go source %s: %w", rawModel.Name, err)
-		}
+		src += fmt.Sprintf("type Raw%s %s\n", rawModel.Name, goSrc)
 
 		model := Model{
 			"": Type("Raw" + rawModel.Name).NotNull(),
@@ -81,18 +75,16 @@ func GenerateGoTypes(options *Options, out io.Writer) error {
 
 		goSrc, err = model.Golang()
 		if err != nil {
-			return xerrors.Errorf("failed to generate go definition for %s: %w", rawModel.Name, err)
+			return "", xerrors.Errorf("failed to generate go definition for %s: %w", rawModel.Name, err)
 		}
 
-		_, err = fmt.Fprintf(out, "type %s %s\n", rawModel.Name, goSrc)
-		if err != nil {
-			return xerrors.Errorf("failed to write go source %s: %w", rawModel.Name, err)
-		}
+		src += fmt.Sprintf("type %s %s\n", rawModel.Name, goSrc)
 	}
-	return nil
+	return src, nil
 }
 
-func GenerateGraphQL(options *Options, out io.Writer) error {
+func GenerateGraphQL(options *Options) (string, error) {
+	src := ""
 	type namedModel struct {
 		Name       string
 		Model      Model
@@ -100,14 +92,14 @@ func GenerateGraphQL(options *Options, out io.Writer) error {
 	}
 	models := []namedModel{}
 	for name, model := range options.Models {
-		models = append(models, namedModel{name, model.Clone(), model})
+		models = append(models, namedModel{name, model.Clone(), model.Nullable()})
 	}
 
 	sort.Slice(models, func(i, j int) bool {
 		return models[i].Name < models[j].Name
 	})
 
-	fmt.Fprintf(out, `
+	src += fmt.Sprintf(`
 schema {
 	query: RootQuery
 	mutation: RootMutation
@@ -116,18 +108,18 @@ type RootQuery {
 `)
 
 	for _, model := range models {
-		fmt.Fprintf(out, "\t%s(id: ID!): %s\n", strcase.ToSnake(model.Name), model.Name)
-		fmt.Fprintf(out, "\t%s_query(filter: %sFilter limit: Int! skip: Int): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
+		src += fmt.Sprintf("\t%s(id: ID!): %s\n", strcase.ToSnake(model.Name), model.Name)
+		src += fmt.Sprintf("\t%s_query(filter: %sFilter limit: Int! skip: Int): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
 	}
-	fmt.Fprintf(out, `}
-type RootMuttation {
-`)
+
+	src += fmt.Sprintf("}\ntype RootMuttation {\n")
+
 	for _, model := range models {
-		fmt.Fprintf(out, "\tnew_%s(data: %sInput!): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
-		fmt.Fprintf(out, "\tupdate_%s(id: ID! data: %sInput!): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
-		fmt.Fprintf(out, "\tdelete_%s(id: ID!): %s\n", strcase.ToSnake(model.Name), model.Name)
+		src += fmt.Sprintf("\tnew_%s(data: %sInput!): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
+		src += fmt.Sprintf("\tupdate_%s(id: ID! data: %sInput!): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
+		src += fmt.Sprintf("\tdelete_%s(id: ID!): %s\n", strcase.ToSnake(model.Name), model.Name)
 	}
-	fmt.Fprintf(out, "}\n")
+	src += fmt.Sprintf("}\n")
 
 	for _, model := range models {
 		for _, relation := range options.Relationships {
@@ -139,28 +131,18 @@ type RootMuttation {
 			}
 		}
 
-		for field, typ := range model.InputModel {
-			model.InputModel[field] = typ.Nullable()
-		}
-
 		gqlSrc, err := model.InputModel.GraphQL()
 		if err != nil {
-			return xerrors.Errorf("failed to generate go definition for %s: %w", model.Name, err)
+			return "", xerrors.Errorf("failed to generate go definition for %s: %w", model.Name, err)
 		}
 
-		_, err = fmt.Fprintf(out, "input %sInput %s\n", model.Name, gqlSrc)
-		if err != nil {
-			return xerrors.Errorf("failed to write go source %s: %w", model.Name, err)
-		}
+		src += fmt.Sprintf("input %sInput %s\n", model.Name, gqlSrc)
 
 		gqlSrc, err = model.Model.GraphQL()
 		if err != nil {
-			return xerrors.Errorf("failed to generate go definition for %s: %w", model.Name, err)
+			return "", xerrors.Errorf("failed to generate go definition for %s: %w", model.Name, err)
 		}
-		_, err = fmt.Fprintf(out, "type %s %s\n", model.Name, gqlSrc)
-		if err != nil {
-			return xerrors.Errorf("failed to write go source %s: %w", model.Name, err)
-		}
+		src += fmt.Sprintf("type %s %s\n", model.Name, gqlSrc)
 	}
-	return nil
+	return src, nil
 }
