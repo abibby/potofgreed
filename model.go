@@ -19,7 +19,7 @@ func (m Model) GraphQL() (string, error) {
 	}
 	types := []namedType{}
 	for field, typ := range m {
-		types = append(types, namedType{field, typ})
+		types = append(types, namedType{strcase.ToSnake(field), typ})
 	}
 
 	// you need to sort the
@@ -65,7 +65,7 @@ func (m Model) Golang() (string, error) {
 		}
 		goSrc += fmt.Sprintf("\t%s %s", strcase.ToCamel(typ.Field), typeSrc)
 		if typ.Field != "" {
-			goSrc += fmt.Sprintf(" `json:\"%s\"`", typ.Field)
+			goSrc += fmt.Sprintf(" `json:\"%s\"`", strcase.ToSnake(typ.Field))
 		}
 		goSrc += "\n"
 	}

@@ -26,6 +26,20 @@ type internalType struct {
 	Nullable bool
 }
 
+func (t Type) Nullable() Type {
+	if strings.HasSuffix(string(t), "!") {
+		return t[:len(t)-1]
+	}
+	return t
+}
+
+func (t Type) NotNull() Type {
+	if strings.HasSuffix(string(t), "!") {
+		return t
+	}
+	return t + "!"
+}
+
 // GraphQL returns a representration of the type in GraphQL syntax
 func (t *Type) GraphQL() (string, error) {
 	_, err := t.internalType()
