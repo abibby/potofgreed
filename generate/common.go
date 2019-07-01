@@ -1,6 +1,17 @@
-package generate
+package _package
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/comicbox/comicbox/comicboxd/data"
+	"github.com/comicbox/comicbox/comicboxd/errors"
+	"github.com/google/uuid"
+	"github.com/graph-gophers/graphql-go"
+	"github.com/graph-gophers/graphql-go/relay"
+)
 
 type Model struct {
 	ID uuid.UUID
@@ -45,4 +56,21 @@ type FloatCompair struct {
 type IDCompair struct {
 	EQ uuid.UUID
 	NE uuid.UUID
+}
+
+func Handler() http.Handler {
+	dir := "comicboxd/app/schema/gql"
+	s := ""
+	files, err := data.AssetDir(dir)
+	errors.Check(err)
+	for _, file := range files {
+		s += string(data.MustAsset(filepath.Join(dir, file))) + "\n"
+	}
+	schema, err := graphql.ParseSchema(s, &RootQuery{})
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		os.Exit(1)
+	}
+
+	return addUser(&relay.Handler{Schema: schema})
 }

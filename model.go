@@ -10,6 +10,11 @@ import (
 
 type Model map[string]Type
 
+type namedType struct {
+	Field string
+	Type  Type
+}
+
 func (m Model) Nullable() Model {
 	clone := m.Clone()
 	for field, typ := range clone {
@@ -18,13 +23,8 @@ func (m Model) Nullable() Model {
 	return clone
 }
 
-// GraphQL returns a representration of the model in GraphQL syntax
-func (m Model) GraphQL() (string, error) {
+func (m Model) slice() []namedType {
 
-	type namedType struct {
-		Field string
-		Type  Type
-	}
 	types := []namedType{}
 	for field, typ := range m {
 		types = append(types, namedType{strcase.ToSnake(field), typ})
@@ -34,9 +34,14 @@ func (m Model) GraphQL() (string, error) {
 	sort.Slice(types, func(i, j int) bool {
 		return types[i].Field < types[j].Field
 	})
+	return types
+}
+
+// GraphQL returns a representration of the model in GraphQL syntax
+func (m Model) GraphQL() (string, error) {
 
 	gqlSrc := "{\n"
-	for _, typ := range types {
+	for _, typ := range m.slice() {
 		typeSrc, err := typ.Type.GraphQL()
 		if err != nil {
 			return "", xerrors.Errorf("failed to generate type for %s, :w", typ.Field, err)
@@ -51,22 +56,8 @@ func (m Model) GraphQL() (string, error) {
 // Golang returns a representration of the model in go syntax
 func (m Model) Golang() (string, error) {
 
-	type namedType struct {
-		Field string
-		Type  Type
-	}
-	types := []namedType{}
-	for field, typ := range m {
-		types = append(types, namedType{field, typ})
-	}
-
-	// you need to sort the
-	sort.Slice(types, func(i, j int) bool {
-		return types[i].Field < types[j].Field
-	})
-
 	goSrc := "struct {\n"
-	for _, typ := range types {
+	for _, typ := range m.slice() {
 		typeSrc, err := typ.Type.Golang()
 		if err != nil {
 			return "", xerrors.Errorf("failed to generate type for %s, :w", typ.Field, err)

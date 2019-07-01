@@ -187,3 +187,45 @@ func TestGenerateGraphQL(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, src)
 }
+
+func TestGenerateGoFunctions(t *testing.T) {
+	src, err := GenerateGoFunctions(&Options{
+		Package: "foo",
+		Version: 1,
+		Models: map[string]Model{
+			"Book": Model{
+				"authors": "[String!]!",
+				"chapter": "Float",
+				"series":  "String!",
+				"title":   "String!",
+				"volume":  "Int",
+			},
+			"User": Model{
+				"name":     "String!",
+				"password": "String!",
+			},
+			"UserBook": Model{
+				"current_page": "Int",
+				"rating":       "Float",
+			},
+		},
+		Relationships: []Relationship{
+			Relationship{
+				FromType:  "User",
+				FromCount: "one",
+				ToType:    "UserBook",
+				ToCount:   "many",
+			},
+			Relationship{
+				FromType:  "UserBook",
+				FromCount: "one",
+				ToType:    "Book",
+				ToCount:   "one",
+			},
+		},
+	})
+
+	expected := ""
+	assert.NoError(t, err)
+	assert.Equal(t, expected, string(src))
+}

@@ -1,4 +1,4 @@
-package generate
+package _package
 
 import (
 	"context"
@@ -6,26 +6,37 @@ import (
 	"github.com/google/uuid"
 )
 
-type T Model
+type _T Model
 
-type _T_Args struct {
+// _function_start_
+
+// _TArgs are the arguments for the _T command
+type _TArgs struct {
 	ID uuid.UUID
 }
 
-func (*query) _T_(ctx context.Context, args _T_Args) *T {
-	t := &T{}
-	return t
+// _T finds a _T in the database
+func (*query) _T(ctx context.Context, args _TArgs) *_T {
+	return &_T{}
 }
 
-type _T_Filter interface{}
+// _TFilter is a filter to search the _T database
+type _TFilter interface{}
 
-type _T_SearchArgs struct {
+// _TSearchArgs are the arguments for the _TSearch command
+type _TSearchArgs struct {
 	Limit  int32
 	Count  *int32
-	Filter *_T_Filter
+	Filter *_TFilter
 }
 
-func (*query) _T_Search(ctx context.Context, args _T_SearchArgs) *T {
-	t := &T{}
-	return t
+// _TResult is the result of a query of the _T database
+type _TResult struct {
+	Count int32
+	Data  []_T
+}
+
+// _TSearch searches the _T database and returls all metching reccords
+func (*query) _TSearch(ctx context.Context, args _TSearchArgs) _TResult {
+	return _TResult{}
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/zwzn/potofgreed/_example/models"
 )
 
-//go:generate potofgreed
+//go:generate go run ../potofgreed/main.go
 
 func greet(w http.ResponseWriter, r *http.Request) {
 	b := models.Book{}
