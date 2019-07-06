@@ -21,7 +21,7 @@ func (*query) _T(ctx context.Context, args _TArgs) *_T {
 }
 
 // _TFilter is a filter to search the _T database
-type _TFilter interface{}
+type _TFilter struct{}
 
 // _TSearchArgs are the arguments for the _TSearch command
 type _TSearchArgs struct {

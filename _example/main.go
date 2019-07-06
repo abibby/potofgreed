@@ -16,6 +16,6 @@ func greet(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", greet)
+	http.Handle("/", models.Handler())
 	http.ListenAndServe(":8080", nil)
 }

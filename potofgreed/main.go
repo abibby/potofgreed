@@ -33,6 +33,13 @@ func main() {
 	goSrc, err = potofgreed.GenerateGoGraphQL(o)
 	check(err)
 	writeGoFile(path.Join(o.Package, "schema.go"), goSrc)
+
+	goSrc, err = potofgreed.GenerateGoFunctions(o)
+	check(err)
+	writeGoFile(path.Join(o.Package, "funcs.go"), goSrc)
+
+	goSrc = potofgreed.CommonGo(o)
+	writeGoFile(path.Join(o.Package, "common.go"), goSrc)
 }
 
 func writeGoFile(fileName string, src []byte) {

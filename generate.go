@@ -123,6 +123,11 @@ func GenerateGoFunctions(options *Options) ([]byte, error) {
 
 	return src, nil
 }
+func CommonGo(options *Options) []byte {
+	b := data.MustReadFile("common.go")
+	b = bytes.ReplaceAll(b, []byte("_package"), []byte(options.Package))
+	return b
+}
 
 func GenerateGraphQL(options *Options) ([]byte, error) {
 	src := fmt.Sprintf(`
