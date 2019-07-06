@@ -183,9 +183,9 @@ func TestGenerateGraphQL(t *testing.T) {
 		},
 	})
 
-	expected := "\nschema {\n\tquery: RootQuery\n\tmutation: RootMutation\n}\ntype RootQuery {\n\tbook(id: ID!): Book\n\tbook_query(filter: BookFilter limit: Int! skip: Int): Book\n\tuser(id: ID!): User\n\tuser_query(filter: UserFilter limit: Int! skip: Int): User\n\tuser_book(id: ID!): UserBook\n\tuser_book_query(filter: UserBookFilter limit: Int! skip: Int): UserBook\n}\ntype RootMuttation {\n\tnew_book(data: BookInput!): Book\n\tupdate_book(id: ID! data: BookInput!): Book\n\tdelete_book(id: ID!): Book\n\tnew_user(data: UserInput!): User\n\tupdate_user(id: ID! data: UserInput!): User\n\tdelete_user(id: ID!): User\n\tnew_user_book(data: UserBookInput!): UserBook\n\tupdate_user_book(id: ID! data: UserBookInput!): UserBook\n\tdelete_user_book(id: ID!): UserBook\n}\ninput BookInput {\n\tauthors: [String!]\n\tchapter: Float\n\tseries: String\n\ttitle: String\n\tvolume: Int\n}\ntype Book {\n\tauthors: [String!]!\n\tchapter: Float\n\tseries: String!\n\ttitle: String!\n\tuser_book: UserBook\n\tvolume: Int\n}\ninput UserInput {\n\tname: String\n\tpassword: String\n}\ntype User {\n\tname: String!\n\tpassword: String!\n\tuser_book: UserBook\n}\ninput UserBookInput {\n\tcurrent_page: Int\n\trating: Float\n}\ntype UserBook {\n\tbook: Book\n\tcurrent_page: Int\n\trating: Float\n\tuser: User\n}\n"
+	expected := ""
 	assert.NoError(t, err)
-	assert.Equal(t, expected, src)
+	assert.Equal(t, expected, string(src))
 }
 
 func TestGenerateGoFunctions(t *testing.T) {

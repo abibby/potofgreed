@@ -145,7 +145,7 @@ type RootQuery {
 		src += fmt.Sprintf("\t%s_query(filter: %sFilter limit: Int! skip: Int): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
 	}
 
-	src += fmt.Sprintf("}\ntype RootMuttation {\n")
+	src += fmt.Sprintf("}\ntype RootMutation {\n")
 
 	for _, model := range models {
 		src += fmt.Sprintf("\tnew_%s(data: %sInput!): %s\n", strcase.ToSnake(model.Name), model.Name, model.Name)
@@ -153,6 +153,37 @@ type RootQuery {
 		src += fmt.Sprintf("\tdelete_%s(id: ID!): %s\n", strcase.ToSnake(model.Name), model.Name)
 	}
 	src += fmt.Sprintf("}\n")
+	src += `
+input StringCompair {
+	eq: String
+	ne: String
+	lt: String
+	le: String
+	gt: String
+	ge: String
+	contains: String
+	starts_with: String
+	ends_with: String
+}
+
+input IntCompair {
+	eq: Int
+	ne: Int
+	lt: Int
+	le: Int
+	gt: Int
+	ge: Int
+}
+
+input FloatCompair {
+	eq: Float
+	ne: Float
+	lt: Float
+	le: Float
+	gt: Float
+	ge: Float
+}
+`
 
 	for _, model := range models {
 		inputModel := model.Model.Nullable()
@@ -167,14 +198,20 @@ type RootQuery {
 
 		gqlSrc, err := inputModel.GraphQL()
 		if err != nil {
-			return nil, xerrors.Errorf("failed to generate go definition for %s: %w", model.Name, err)
+			return nil, xerrors.Errorf("failed to generate GraphQL definition for %sInput: %w", model.Name, err)
+		}
+		src += fmt.Sprintf("input %sInput %s\n", model.Name, gqlSrc)
+
+		gqlSrc, err = model.Model.GraphQLFilter()
+		if err != nil {
+			return nil, xerrors.Errorf("failed to generate GraphQL definition for %sFilter: %w", model.Name, err)
 		}
 
-		src += fmt.Sprintf("input %sInput %s\n", model.Name, gqlSrc)
+		src += fmt.Sprintf("input %sFilter %s\n", model.Name, gqlSrc)
 
 		gqlSrc, err = model.Model.GraphQL()
 		if err != nil {
-			return nil, xerrors.Errorf("failed to generate go definition for %s: %w", model.Name, err)
+			return nil, xerrors.Errorf("failed to generate GraphQL definition for %s: %w", model.Name, err)
 		}
 		src += fmt.Sprintf("type %s %s\n", model.Name, gqlSrc)
 	}

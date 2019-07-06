@@ -53,6 +53,31 @@ func (m Model) GraphQL() (string, error) {
 	return gqlSrc, nil
 }
 
+// GraphQLFilter returns a representration of the model's filter in GraphQL
+// syntax
+func (m Model) GraphQLFilter() (string, error) {
+
+	gqlSrc := "{\n"
+	for _, typ := range m.slice() {
+		typeSrc, err := typ.Type.Nullable().GraphQL()
+		if err != nil {
+			return "", xerrors.Errorf("failed to generate type for %s, :w", typ.Field, err)
+		}
+		if typeSrc == "String" {
+			gqlSrc += fmt.Sprintf("\t%s: StringCompair\n", typ.Field)
+		}
+		if typeSrc == "Float" {
+			gqlSrc += fmt.Sprintf("\t%s: FloatCompair\n", typ.Field)
+		}
+		if typeSrc == "Int" {
+			gqlSrc += fmt.Sprintf("\t%s: IntCompair\n", typ.Field)
+		}
+	}
+	gqlSrc += "}"
+
+	return gqlSrc, nil
+}
+
 // Golang returns a representration of the model in go syntax
 func (m Model) Golang() (string, error) {
 

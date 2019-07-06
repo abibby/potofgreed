@@ -41,16 +41,16 @@ func (t Type) NotNull() Type {
 }
 
 // GraphQL returns a representration of the type in GraphQL syntax
-func (t *Type) GraphQL() (string, error) {
+func (t Type) GraphQL() (string, error) {
 	_, err := t.internalType()
 	if err != nil {
 		return "", xerrors.Errorf("failed to parse type: %w", err)
 	}
-	return string(*t), nil
+	return string(t), nil
 }
 
 // Golang returns a representration of the type in go syntax
-func (t *Type) Golang() (string, error) {
+func (t Type) Golang() (string, error) {
 	iType, err := t.internalType()
 	if err != nil {
 		return "", xerrors.Errorf("failed to parse type: %w", err)
